@@ -34,15 +34,13 @@ class AccountViewSet(viewsets.ViewSet):
         }
         if request.user.is_authenticated:
             data['user'] = UserSerializer(request.user).data
-            #data['user'].pop('id')
+            # data['user'].pop('id')
         return Response(data)
-
 
     @action(methods=['POST'], detail=False)
     def logout(self, request):
         django_logout(request)
         return Response({'Success': True})
-
 
     @action(methods=['POST'], detail=False)
     def login(self, request):
@@ -54,19 +52,8 @@ class AccountViewSet(viewsets.ViewSet):
                 "message": "Please check input.",
                 "errors": serializer.errors,
             }, status=400)
-        username = serializer.validated_data['username']
-        password = serializer.validated_data['password']
-
-        if not User.objects.filter(username=username).exists():
-            return Response({
-                "success": False,
-                "message": "Please check input.",
-                "errors": {
-                    "username": [
-                        "User does not exist."
-                    ]
-                }
-            }, status=400)
+        username = serializer.validated_data['username'].lower()
+        password = serializer.validated_data['password'].lower()
 
         user = django_authenticate(username=username, password=password)
         if not user or user.is_anonymous:
@@ -78,7 +65,7 @@ class AccountViewSet(viewsets.ViewSet):
         django_login(request, user)
         return Response({
             "success": True,
-            "user" : UserSerializer(user).data,
+            "user": UserSerializer(user).data,
         })
 
     @action(methods=['POST'], detail=False)
