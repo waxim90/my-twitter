@@ -13,7 +13,8 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self, data):
-        if not User.objects.filter(username=data['username'].lower()).exists():
+        data['username'] = data['username'].lower()
+        if not User.objects.filter(username=data['username']).exists():
             raise exceptions.ValidationError({
                 "username": "User does not exist."
             })
@@ -31,12 +32,14 @@ class SignupSerializer(serializers.ModelSerializer):
 
     # called when is_valid() is called
     def validate(self, data):
-        if User.objects.filter(username=data['username'].lower()).exists():
+        data['username'] = data['username'].lower()
+        data['email'] = data['email'].lower()
+        if User.objects.filter(username=data['username']).exists():
             raise exceptions.ValidationError({
                 'username': "This username has been occupied."
             })
 
-        if User.objects.filter(email=data['email'].lower()).exists():
+        if User.objects.filter(email=data['email']).exists()
             raise exceptions.ValidationError({
                 'email': "This email has been occupied."
             })
@@ -44,8 +47,8 @@ class SignupSerializer(serializers.ModelSerializer):
 
     # called when save() is called
     def create(self, validated_data):
-        username = validated_data['username'].lower()
-        email = validated_data['email'].lower()
+        username = validated_data['username']
+        email = validated_data['email']
         password = validated_data['password']
 
         user = User.objects.create_user(

@@ -52,8 +52,8 @@ class AccountViewSet(viewsets.ViewSet):
                 "message": "Please check input.",
                 "errors": serializer.errors,
             }, status=400)
-        username = serializer.validated_data['username'].lower()
-        password = serializer.validated_data['password'].lower()
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
 
         user = django_authenticate(username=username, password=password)
         if not user or user.is_anonymous:
