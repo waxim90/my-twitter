@@ -8,8 +8,8 @@ from datetime import timedelta
 class TweetTests(TestCase):
 
     def test_hours_to_now(self):
-        waxim = User.objects.create_user(username='waxim')
-        tweet = Tweet.objects.create(user=waxim, content='Come on!!!')
+        user = User.objects.create_user(username='waxim')
+        tweet = Tweet.objects.create(user=user, content='Come on!!!')
         tweet.created_at = utc_now() - timedelta(hours=10)
         tweet.save()
         self.assertEqual(tweet.hours_to_now, 10)
