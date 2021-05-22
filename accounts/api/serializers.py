@@ -18,6 +18,10 @@ class UserSerializerForFriendship(UserSerializerForTweet):
     pass
 
 
+class UserSerializerForComment(UserSerializerForTweet):
+    pass
+
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
