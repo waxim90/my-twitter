@@ -8,6 +8,7 @@ from comments.api.serializers import (
     CommentSerializerForUpdate,
 )
 from comments.models import Comment
+from utils.decorators import required_params
 
 
 class CommentViewSet(viewsets.GenericViewSet):
@@ -37,16 +38,18 @@ class CommentViewSet(viewsets.GenericViewSet):
             return [IsAuthenticated(), IsObjectOwner()]
         return [AllowAny()]
 
+    @required_params(params=['tweet_id'])
     def list(self, request, *args, **kwargs):
         """
         GET /api/comments/?tweet_id=1
         重载 list 方法，不列出所有 comments，必须要求指定 tweet_id 作为筛选条件
         """
-        if 'tweet_id' not in request.query_params:
-            return Response({
-                'message': 'missing tweet_id in request',
-                'success': False,
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # if 'tweet_id' not in request.query_params:
+        #     return Response({
+        #         'message': 'missing tweet_id in request',
+        #         'success': False,
+        #     }, status=status.HTTP_400_BAD_REQUEST)
+
         # 利用 django_filter来filter
         queryset = self.get_queryset()
         comments = self.filter_queryset(queryset)\
