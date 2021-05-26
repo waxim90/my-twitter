@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from comments.api.serializers import CommentSerializer
 from tweets.models import Tweet
 from accounts.api.serializers import UserSerializerForTweet
 
@@ -10,6 +11,19 @@ class TweetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tweet
         fields = ('id', 'user', 'created_at', 'content')
+
+
+class TweetSerializerWithComments(TweetSerializer):
+    comments = CommentSerializer(source='comment_set', many=True)
+    # 使用 serialziers.SerializerMethodField 的方式实现 comments
+    # comments = serializers.SerializerMethodField()
+    #
+    # def get_comments(self, obj):
+    #     return CommentSerializer(obj.comment_set.all(), many=True).data
+
+    class Meta:
+        model = Tweet
+        fields = ('id', 'user', 'created_at', 'content', 'comments')
 
 
 class TweetSerializerForCreate(serializers.ModelSerializer):
