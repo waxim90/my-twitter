@@ -15,7 +15,7 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = ('user', 'created_at')
 
 
-class LikeSerializerForCreate(serializers.ModelSerializer):
+class BaseLikeSerializerForCreateAndCancel(serializers.ModelSerializer):
     content_type = serializers.ChoiceField(choices=['comment', 'tweet'])
     object_id = serializers.IntegerField()
 
@@ -39,6 +39,9 @@ class LikeSerializerForCreate(serializers.ModelSerializer):
             raise ValidationError({'object_id': 'Object does not exist.'})
         return data
 
+
+class LikeSerializerForCreate(BaseLikeSerializerForCreateAndCancel):
+
     def create(self, validated_data):
         model_class = self._get_model_class(validated_data)
         instance, _ = Like.objects.get_or_create(
@@ -47,3 +50,19 @@ class LikeSerializerForCreate(serializers.ModelSerializer):
             object_id=validated_data['object_id'],
         )
         return instance
+
+
+class LikeSerializerForCancel(BaseLikeSerializerForCreateAndCancel):
+
+    def cancel(self):
+        """
+        cancel 方法是一个自定义的方法，cancel 不会被 serializer.save 调用
+        所以在views里需要直接调用 serializer.cancel()
+        """
+        model_class = self._get_model_class(self.validated_data)
+        deleted_count, rows_count = Like.objects.filter(
+            user=self.context['request'].user,
+            content_type=ContentType.objects.get_for_model(model_class),
+            object_id=self.validated_data['object_id'],
+        ).delete()
+        return deleted_count
