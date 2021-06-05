@@ -3,13 +3,12 @@ from rest_framework import status
 from functools import wraps
 
 
-def required_params(request_attr='query_params', params=None):
+def required_params(method='GET', params=None):
     """
     当我们使用 @required_params(params=['some_param']) 的时候
     这个 required_params 函数应该需要返回一个 decorator 函数，这个 decorator 函数的参数
     就是被 @required_params 包裹起来的函数 view_func
     """
-
     # 从效果上来说，参数中写 params=[] 很多时候也没有太大问题
     # 但是从好的编程习惯上来说，函数的参数列表中的值不能是一个 mutable 的参数
     if params is None:
@@ -22,7 +21,12 @@ def required_params(request_attr='query_params', params=None):
         """
         @wraps(view_func)
         def _wrapped_view(instance, request, *args, **kwargs):
-            data = getattr(request, request_attr)
+            # GET方法 -> data = request.query_params
+            # POST方法 -> data = request.data
+            if method.lower() == 'get':
+                data = request.query_params
+            else:
+                data = request.data
             missing_params = [
                 param
                 for param in params
