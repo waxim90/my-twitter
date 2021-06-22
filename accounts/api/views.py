@@ -97,5 +97,6 @@ class UserProfileViewSet(
     viewsets.mixins.UpdateModelMixin,
 ):
     queryset = UserProfile
+    # queryset = UserProfile.objects.all()
     permission_classes = (IsAuthenticated, IsObjectOwner)
     serializer_class = UserProfileSerializerForUpdate
