@@ -9,6 +9,7 @@ from tweets.api.serializers import (
 from tweets.models import Tweet
 from newsfeeds.services import NewsFeedService
 from utils.decorators import required_params
+from utils.paginations import EndlessPagination
 
 
 class TweetViewSet(viewsets.GenericViewSet):
@@ -17,7 +18,7 @@ class TweetViewSet(viewsets.GenericViewSet):
     """
     serializer_class = TweetSerializerForCreate
     queryset = Tweet.objects.all()
-    # serializer_class = TweetSerializer
+    pagination_class = EndlessPagination
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -35,6 +36,7 @@ class TweetViewSet(viewsets.GenericViewSet):
         #     return Response('missing user_id', status=400)
         user_id = request.query_params['user_id']
         tweets = Tweet.objects.filter(user_id=user_id).order_by('-created_at')
+        tweets = self.paginate_queryset(tweets)
         serializer = TweetSerializer(
             tweets,
             context={'request': request},
@@ -42,7 +44,8 @@ class TweetViewSet(viewsets.GenericViewSet):
         )
         # 一般来说 json 格式的 response 默认都要用 hash 的格式
         # 而不能用 list 的格式（约定俗成）
-        return Response({'tweets': serializer.data})
+        # return Response({'tweets': serializer.data})
+        return self.get_paginated_response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         # <HOMEWORK 1> 通过某个 query 参数 with_all_comments 来决定是否需要带上所有 comments
