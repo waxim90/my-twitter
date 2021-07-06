@@ -12,6 +12,7 @@ FOLLOWINGS_URL = '/api/friendships/{}/followings/'
 class FriendshipApiTests(TestCase):
 
     def setUp(self):
+        self.clear_cache()
         # TestCase 中带了_anonymous_client
         # self.anonymous_client = APIClient()
 
