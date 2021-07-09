@@ -12,7 +12,7 @@ from tweets.services import TweetService
 
 class TweetSerializer(serializers.ModelSerializer):
     # 为了解析user其他数据 例如username等等
-    user = UserSerializerForTweet()
+    user = UserSerializerForTweet(source='cached_user')
     has_liked = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
