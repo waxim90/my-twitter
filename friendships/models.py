@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_delete
+
+from accounts.services import UserService
 from friendships.listeners import invalidate_following_cache
 
 
@@ -31,6 +33,14 @@ class Friendship(models.Model):
 
     def __str__(self):
         return f'{self.from_user} followed {self.to_user}'
+
+    @property
+    def cached_from_user(self):
+        return UserService.get_user_through_cache(self.from_user_id)
+
+    @property
+    def cached_to_user(self):
+        return UserService.get_user_through_cache(self.to_user_id)
 
 
 # hook up with listeners to invalidate cache

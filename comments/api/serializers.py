@@ -10,7 +10,7 @@ class CommentSerializer(serializers.ModelSerializer):
     # 如果不加user解析， 那么展示的user只是user_id
     # 加了解析之后，展示的user是一个hash
     # CommentSerializer嵌套了一个UserSerializer
-    user = UserSerializerForComment()
+    user = UserSerializerForComment(source='cached_user')
     has_liked = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
 
