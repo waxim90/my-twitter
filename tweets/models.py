@@ -5,6 +5,7 @@ from django.db.models.signals import pre_delete, post_save
 
 from likes.models import Like
 from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
+from tweets.listeners import push_tweet_to_cache
 from utils.memcached_helpers import MemcachedHelper
 from utils.time_helpers import utc_now
 from utils.listeners import invalidate_object_cache
@@ -89,6 +90,10 @@ class TweetPhoto(models.Model):
         return f'{self.tweet_id}: {self.file}'
 
 
-# hook up with listeners to invalidate cache
+# hook up with listeners to invalidate memcached cache
 pre_delete.connect(invalidate_object_cache, sender=Tweet)
 post_save.connect(invalidate_object_cache, sender=Tweet)
+
+# hook up with listeners to push to redis cache
+post_save.connect(push_tweet_to_cache, sender=Tweet)
+
