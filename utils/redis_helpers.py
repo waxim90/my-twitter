@@ -21,7 +21,6 @@ class RedisHelper:
             conn.rpush(key, *serialized_list)
             conn.expire(key, settings.REDIS_KEY_EXPIRE_TIME)
 
-
     @classmethod
     def load_objects(cls, key, queryset):
         conn = RedisClient.get_connection()
