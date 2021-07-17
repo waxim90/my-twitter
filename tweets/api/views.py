@@ -33,15 +33,15 @@ class TweetViewSet(viewsets.GenericViewSet):
         """
         重载 list 方法，不列出所有 tweets，必须要求指定 user_id 作为筛选条件
         """
-        # if 'user_id' not in request.query_params:
-        #     return Response('missing user_id', status=400)
         user_id = request.query_params['user_id']
-        # tweets = Tweet.objects.filter(user_id=user_id).order_by('-created_at')
         # get tweets from redis cache instead of DB
-        tweets = TweetService.get_cached_tweets(user_id=user_id)
-        tweets = self.paginate_queryset(tweets)
+        cached_tweets = TweetService.get_cached_tweets(user_id=user_id)
+        page = self.paginator.paginate_cached_list(cached_tweets, request)
+        if page is None:
+            queryset = Tweet.objects.filter(user_id=user_id).order_by('-created_at')
+            page = self.paginate_queryset(queryset)
         serializer = TweetSerializer(
-            tweets,
+            page,
             context={'request': request},
             many=True,
         )
