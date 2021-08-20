@@ -1,4 +1,5 @@
 from utils.listeners import invalidate_object_cache
+from utils.redis_helpers import RedisHelper
 
 
 def incr_likes_count(sender, instance, created, **kwargs):
@@ -22,7 +23,7 @@ def incr_likes_count(sender, instance, created, **kwargs):
     # 方法1：
     Tweet.objects.filter(id=instance.object_id)\
         .update(likes_count=F('likes_count') + 1)
-    invalidate_object_cache(sender=Tweet, instance=instance.content_object)
+    RedisHelper.incr_count(instance.content_object,'likes_count')
 
     # 方法2：
     # tweet = instance.content_object
@@ -48,7 +49,7 @@ def decr_likes_count(sender, instance, **kwargs):
     # 方法1：
     Tweet.objects.filter(id=instance.object_id)\
         .update(likes_count=F('likes_count') - 1)
-    invalidate_object_cache(sender=Tweet, instance=instance.content_object)
+    RedisHelper.decr_count(instance.content_object,'likes_count')
 
     # 方法2：
     # tweet = instance.content_object
