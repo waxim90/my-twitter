@@ -36,9 +36,11 @@ class TweetSerializer(serializers.ModelSerializer):
 
     def get_likes_count(self, obj):
         return obj.like_set.count()
+        # return obj.likes_count
 
     def get_comments_count(self, obj):
         return obj.comment_set.count()
+        # return obj.comments_count
 
     def get_photo_urls(self, obj):
         photo_urls = []
