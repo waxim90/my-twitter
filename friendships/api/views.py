@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.utils.decorators import method_decorator
+from ratelimit.decorators import ratelimit
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -26,6 +28,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
 
     # GET /api/friendships/1/followers/
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
+    @method_decorator(ratelimit(key='user_or_ip', rate='3/s', method='GET', block=True))
     def followers(self, request, pk):
         friendships = Friendship.objects.filter(to_user=pk)
         page = self.paginate_queryset(friendships)
@@ -35,6 +38,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
 
     # GET /api/friendships/1/followings
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
+    @method_decorator(ratelimit(key='user_or_ip', rate='3/s', method='GET', block=True))
     def followings(self, request, pk):
         friendships = Friendship.objects.filter(from_user=pk)
         page = self.paginate_queryset(friendships)
@@ -43,6 +47,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
+    @method_decorator(ratelimit(key='user', rate='10/s', method='POST', block=True))
     def follow(self, request, pk):
         # raise 404 if no user with id=pk
         self.get_object()
@@ -72,6 +77,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
         )
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
+    @method_decorator(ratelimit(key='user', rate='10/s', method='POST', block=True))
     def unfollow(self, request, pk):
         # raise 404 if no user with id=pk
         unfollow_user = self.get_object()
@@ -97,5 +103,6 @@ class FriendshipViewSet(viewsets.GenericViewSet):
         # FriendshipService.invalidate_following_cache(request.user.id)
         return Response({'success': True, 'deleted': deleted})
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='3/s', method='GET', block=True))
     def list(self, request):
         return Response({'message': 'this is friendships home page'})

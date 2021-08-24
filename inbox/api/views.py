@@ -1,4 +1,6 @@
+from django.utils.decorators import method_decorator
 from notifications.models import Notification
+from ratelimit.decorators import ratelimit
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -27,16 +29,19 @@ class NotificationViewSet(
     # 如果不指定 url_path, 默认地址为 /api/notifications/unread_count/
     # url里有下划线不符合rest, 所以要指定 url_path='unread-count'
     @action(methods=['GET'], detail=False, url_path='unread-count')
+    @method_decorator(ratelimit(key='user', rate='3/s', method='GET', block=True))
     def unread_count(self, request, *args, **kwargs):
         count = self.get_queryset().filter(unread=True).count()
         return Response({'unread_count': count}, status=status.HTTP_200_OK)
 
     @action(methods=['POST'], detail=False, url_path='mark-all-as-read')
+    @method_decorator(ratelimit(key='user', rate='3/s', method='POST', block=True))
     def mark_all_as_read(self, request, *args, **kwargs):
         updated_count = self.get_queryset().filter(unread=True).update(unread=False)
         return Response({'marked_count': updated_count}, status=status.HTTP_200_OK)
 
     @required_params(method='PUT', params=['unread'])
+    @method_decorator(ratelimit(key='user', rate='3/s', method='POST', block=True))
     def update(self, request, *args, **kwargs):
         # PUT /api/notifications/1/
         """
