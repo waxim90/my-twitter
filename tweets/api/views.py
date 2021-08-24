@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -29,6 +31,7 @@ class TweetViewSet(viewsets.GenericViewSet):
     # GET -> request.query_params
     # POST -> request.data
     @required_params(params=['user_id'])
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/s', method='GET', block=True))
     def list(self, request):
         """
         重载 list 方法，不列出所有 tweets，必须要求指定 user_id 作为筛选条件
@@ -50,6 +53,7 @@ class TweetViewSet(viewsets.GenericViewSet):
         # return Response({'tweets': serializer.data})
         return self.get_paginated_response(serializer.data)
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/s', method='GET', block=True))
     def retrieve(self, request, *args, **kwargs):
         # <HOMEWORK 1> 通过某个 query 参数 with_all_comments 来决定是否需要带上所有 comments
         # <HOMEWORK 2> 通过某个 query 参数 with_preview_comments 来决定是否需要带上前三条 comments
@@ -60,6 +64,8 @@ class TweetViewSet(viewsets.GenericViewSet):
         )
         return Response(serializer.data)
 
+    @method_decorator(ratelimit(key='user', rate='1/s', method='POST', block=True))
+    @method_decorator(ratelimit(key='user', rate='5/m', method='POST', block=True))
     def create(self, request, *args, **kwargs):
         serializer = TweetSerializerForCreate(
             data=request.data,
