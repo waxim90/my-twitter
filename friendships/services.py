@@ -38,6 +38,12 @@ class FriendshipService(object):
         ).prefetch_related('from_user')
         return [friendship.from_user for friendship in friendships]
 
+    @classmethod
+    def get_follower_ids(cls, to_user_id):
+        friendships = Friendship.objects.filter(to_user_id=to_user_id)
+        return [friendship.from_user_id for friendship in friendships]
+
+
     # 用了cache后，就不再需要has_followed方法每次去db query了
     # @classmethod
     # def has_followed(cls, from_user, to_user):
