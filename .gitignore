@@ -3,6 +3,12 @@
 Vagrantfile
 .idea
 media
+hbase-2.3.6-bin.tar.gz
+jdk-8u301-linux-x64.tar.gz
+thrift-0.14.2.tar.gz
+thrift-0.14.2
+thrift
+hbase-2.3.6
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
