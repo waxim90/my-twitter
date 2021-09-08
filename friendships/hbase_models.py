@@ -16,8 +16,8 @@ class HBaseFollowing(models.HBaseModel):
     to_user_id = models.IntegerField(column_family='cf')
 
     class Meta:
-        table_name = 'twitter_followings'
         row_key = ('from_user_id', 'created_at')
+        table_name = 'twitter_followings'
 
 
 class HBaseFollower(models.HBaseModel):
