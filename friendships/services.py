@@ -44,7 +44,10 @@ class FriendshipService(object):
 
     @classmethod
     def get_follower_ids(cls, to_user_id):
-        friendships = Friendship.objects.filter(to_user_id=to_user_id)
+        if not GateKeeper.is_switch_on('switch_friendship_to_hbase'):
+            friendships = Friendship.objects.filter(to_user_id=to_user_id)
+        else:
+            friendships = HBaseFollower.filter(prefix=(to_user_id,))
         return [friendship.from_user_id for friendship in friendships]
 
     # 用了cache后，就不再需要has_followed方法每次去db query了
@@ -57,17 +60,15 @@ class FriendshipService(object):
 
     @classmethod
     def get_following_user_id_set(cls, from_user_id):
-        key = FOLLOWINGS_PATTERN.format(user_id=from_user_id)
-        user_id_set = cache.get(key)
-        if user_id_set is not None:
-            return user_id_set
-
-        friendships = Friendship.objects.filter(from_user_id=from_user_id)
+        # <TODO> cache in redis set
+        if not GateKeeper.is_switch_on('switch_friendship_to_hbase'):
+            friendships = Friendship.objects.filter(from_user_id=from_user_id)
+        else:
+            friendships = HBaseFollowing.filter(prefix=(from_user_id,))
         user_id_set = set([
             fs.to_user_id
             for fs in friendships
         ])
-        cache.set(key, user_id_set)
         return user_id_set
 
     @classmethod

@@ -5,6 +5,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+
+from friendships.hbase_models import HBaseFollower, HBaseFollowing
 from friendships.models import Friendship
 from friendships.api.serializers import (
     FollowerSerializer,
@@ -12,7 +14,8 @@ from friendships.api.serializers import (
     FriendshipSerializerForCreate
 )
 from friendships.services import FriendshipService
-from utils.paginations import FriendshipPagination
+from gatekeeper.models import GateKeeper
+from utils.paginations import EndlessPagination
 
 
 class FriendshipViewSet(viewsets.GenericViewSet):
@@ -24,27 +27,35 @@ class FriendshipViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = FriendshipSerializerForCreate
     # 一般来说，不同的 views 所需要的 pagination 规则肯定是不同的，因此一般都需要自定义
-    pagination_class = FriendshipPagination
+    pagination_class = EndlessPagination
 
     # GET /api/friendships/1/followers/
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     @method_decorator(ratelimit(key='user_or_ip', rate='3/s', method='GET', block=True))
     def followers(self, request, pk):
-        friendships = Friendship.objects.filter(to_user=pk)
-        page = self.paginate_queryset(friendships)
+        pk = int(pk)
+        if GateKeeper.is_switch_on('switch_friendship_to_hbase'):
+            page = self.paginator.paginate_hbase(HBaseFollower, (pk,), request)
+        else:
+            friendships = Friendship.objects.filter(to_user_id=pk).order_by('-created_at')
+            page = self.paginator.paginate_queryset(friendships, request)
         # many=True tell drf that queryset contains multiple items (a list of items)
         serializer = FollowerSerializer(page, many=True, context={'request': request})
-        return self.get_paginated_response(serializer.data)
+        return self.paginator.get_paginated_response(serializer.data)
 
     # GET /api/friendships/1/followings
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     @method_decorator(ratelimit(key='user_or_ip', rate='3/s', method='GET', block=True))
     def followings(self, request, pk):
-        friendships = Friendship.objects.filter(from_user=pk)
-        page = self.paginate_queryset(friendships)
+        pk = int(pk)
+        if GateKeeper.is_switch_on('switch_friendship_to_hbase'):
+            page = self.paginator.paginate_hbase(HBaseFollowing, (pk,), request)
+        else:
+            friendships = Friendship.objects.filter(from_user_id=pk).order_by('-created_at')
+            page = self.paginator.paginate_queryset(friendships, request)
         # many=True tell drf that queryset contains multiple items (a list of items)
         serializer = FollowingSerializer(page, many=True, context={'request': request})
-        return self.get_paginated_response(serializer.data)
+        return self.paginator.get_paginated_response(serializer.data)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     @method_decorator(ratelimit(key='user', rate='10/s', method='POST', block=True))
