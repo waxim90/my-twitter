@@ -10,7 +10,7 @@ from testing.testcases import TestCase
 class FriendshipServiceTests(TestCase):
 
     def setUp(self):
-        self.clear_cache()
+        super(FriendshipServiceTests, self).setUp()
         self.linghu = self.create_user('linghu')
         self.dongxie = self.create_user('dongxie')
 
