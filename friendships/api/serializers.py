@@ -57,13 +57,12 @@ class FollowingSerializer(BaseFriendshipSerializer):
         return obj.to_user_id
 
 
-class FriendshipSerializerForCreate(serializers.ModelSerializer):
+class FriendshipSerializerForCreate(serializers.Serializer):
     from_user_id = serializers.IntegerField()
     to_user_id = serializers.IntegerField()
 
-    class Meta:
-        model = Friendship
-        fields = ('from_user_id', 'to_user_id')
+    def update(self, instance, validated_data):
+        pass
 
     def validate(self, attrs):
         if attrs['from_user_id'] == attrs['to_user_id']:
