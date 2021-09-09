@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 from comments.models import Comment
 from django_hbase.models import HBaseModel
 from friendships.models import Friendship
+from gatekeeper.models import GateKeeper
 from likes.models import Like
 from newsfeeds.models import NewsFeed
 from tweets.models import Tweet
@@ -36,6 +37,7 @@ class TestCase(DjangoTestCase):
     def clear_cache(self):
         caches['testing'].clear()
         RedisClient.clear()
+        # GateKeeper.set_kv('switch_friendship_to_hbase', 'percent', 100)
 
     @property
     def anonymous_client(self):
@@ -84,4 +86,3 @@ class TestCase(DjangoTestCase):
         client = APIClient()
         client.force_authenticate(user)
         return user, client
-
