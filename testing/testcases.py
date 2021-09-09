@@ -20,7 +20,7 @@ class TestCase(DjangoTestCase):
     def setUp(self):
         self.clear_cache()
         try:
-            hbase_tables_created = True
+            self.hbase_tables_created = True
             for hbase_model_class in HBaseModel.__subclasses__():
                 hbase_model_class.create_table()
         except Exception:
