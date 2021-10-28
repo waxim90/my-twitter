@@ -6,8 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from friendships.hbase_models import HBaseFollower, HBaseFollowing
-from friendships.models import Friendship
+from friendships.models import HBaseFollower, HBaseFollowing, Friendship
 from friendships.api.serializers import (
     FollowerSerializer,
     FollowingSerializer,
