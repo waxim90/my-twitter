@@ -41,8 +41,14 @@ class EndlessPagination(BasePagination):
 
         # 下拉刷新操作：
         if 'created_at__gt' in request.query_params:
-            # 转换string to datetime格式用于比较：2021-7-15 19:34:44.123456
-            created_at__gt = parser.isoparse(request.query_params['created_at__gt'])
+            # 默认ORM created_at:  2021-11-11 11:11:11.123456 iso format
+            # HBaseModel: timestamp format: 16位int
+            # 兼容 iso 格式和 int 格式的时间戳
+            try:
+                # 转换string to datetime格式用于比较：2021-7-15 19:34:44.123456
+                created_at__gt = parser.isoparse(request.query_params['created_at__gt'])
+            except ValueError:
+                created_at__gt = int(request.query_params['created_at__gt'])
             objects = []
             for obj in reversed_ordered_list:
                 if obj.created_at > created_at__gt:
@@ -55,7 +61,11 @@ class EndlessPagination(BasePagination):
         # 上拉向下翻页操作：
         index = 0
         if 'created_at__lt' in request.query_params:
-            created_at__lt = parser.isoparse(request.query_params['created_at__lt'])
+            # 兼容 iso 格式和 int 格式的时间戳
+            try:
+                created_at__lt = parser.isoparse(request.query_params['created_at__lt'])
+            except ValueError:
+                created_at__lt = int(request.query_params['created_at__lt'])
             for index, obj in enumerate(reversed_ordered_list):
                 if obj.created_at < created_at__lt:
                     break

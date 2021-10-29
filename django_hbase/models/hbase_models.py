@@ -25,6 +25,10 @@ class HBaseModel:
     def row_key(self):
         return self.serialize_row_key(self.__dict__)
 
+    @property
+    def id(self):
+        return self.row_key
+
     @classmethod
     def get_table(cls):
         conn = HBaseClient.get_connection()

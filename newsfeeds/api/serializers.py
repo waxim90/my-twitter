@@ -1,11 +1,23 @@
 from rest_framework import serializers
-from newsfeeds.models import NewsFeed
 from tweets.api.serializers import TweetSerializer
 
 
-class NewsFeedSerializer(serializers.ModelSerializer):
-    tweet = TweetSerializer(source='cached_tweet')
+class NewsFeedSerializer(serializers.Serializer):
+    id = serializers.SerializerMethodField()
+    tweet = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
-    class Meta:
-        model = NewsFeed
-        fields = ('id', 'created_at', 'tweet')
+    def get_id(self, obj):
+        return obj.id
+
+    def get_tweet(self, obj):
+        return TweetSerializer(obj.cached_tweet, context=self.context).data
+
+    def get_created_at(self, obj):
+        return obj.created_at
+
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        pass
